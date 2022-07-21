@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Creates resources required by the pdf-rendered lambda
+Parameters:
+  Tier:
+    Description: Unique ID for the pipeline and resources, e.g. a developer's initials on the dev account
+    Type: String
+
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build.html
+
+Resources:
+  ContainerAppLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: AppInAContainer
+      PackageType: Image
+      ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/rjr-app"
+      MemorySize: 4096
+      Timeout: 300
+      Tracing: Active
+      Environment:
+        Variables:
+          TIER: !Ref Tier
+
+  ContainerAppLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ContainerAppLambda}
+      RetentionInDays: 60
