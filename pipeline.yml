@@ -5,15 +5,15 @@ Parameters:
   Tier:
     Description: Unique ID for the pipeline and resources, e.g. a developer's initials on the dev account
     Type: String
-  DeployAccount:
-    Description: Just for playing with role permissions
-    Type: String
   BucketName:
     Description: this pipeline is for experimenting, so put the source on a bucket and use the bucket for building
     Type: String
   RoleName:
     Description: name of the role to use
     Type: String
+  GithubOAuthToken:
+    Type: String
+
 
     # can put encryption configuration on the ecr repository
 Resources:
@@ -51,7 +51,6 @@ Resources:
       LogGroupName: !Sub /aws/codebuild/${CodeBuildProject}
       RetentionInDays: 14
 
-
   PipelineContainerRepository:
     Type: AWS::ECR::Repository
     Properties:
@@ -76,36 +75,6 @@ Resources:
           }
       ImageScanningConfiguration:
         ScanOnPush: true
-      RepositoryPolicyText: !Sub |
-        {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Sid": "AllowPull",
-              "Effect": "Allow",
-              "Principal": {
-                "AWS": [
-                  "arn:aws:iam::${DeployAccount}:user/*"
-                ]
-              },
-              "Action": [
-                "ecr:BatchGetImage",
-                "ecr:GetDownloadUrlForLayer"
-              ]
-            },
-            {
-              "Sid": "AllowAll",
-              "Effect": "Allow",
-              "Principal": {
-                "AWS": "arn:aws:iam::${AWS::AccountId}:user/*"
-              },
-              "Action": [
-                "ecr:*"
-              ]
-            }
-          ]
-        }
-  
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -132,6 +101,7 @@ Resources:
                 Repo: ecr-attempt
                 PollForSourceChanges: false
                 Branch: main
+                OAuthToken: !Ref GithubOAuthToken
               RunOrder: 1
         - Name: Build
           Actions:
@@ -167,10 +137,3 @@ Resources:
                   {
                     "Tier": "${Tier}"
                   }
-
-
-
-
-
-
-

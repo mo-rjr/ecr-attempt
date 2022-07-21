@@ -14,7 +14,7 @@ Resources:
     Properties:
       Description: AppInAContainer
       PackageType: Image
-      ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/rjr-app"
+      ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/rjr-app:latest"
       MemorySize: 4096
       Timeout: 300
       Tracing: Active
