@@ -45,7 +45,7 @@ WORKDIR ${FUNCTION_DIR}
 COPY --from=build-image ${FUNCTION_DIR} ${FUNCTION_DIR}
 
 # set entrypoint to aws-lambda-ric
-ENTRYPOINT ["/usr/local/bin/npx", "aws-lambda-ric"]
+ENTRYPOINT ["/usr/bin/npx", "aws-lambda-ric"]
 
 # Set function handler
 CMD ["index.handler"]
