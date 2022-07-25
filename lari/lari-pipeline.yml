@@ -154,7 +154,7 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND
                 RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${RoleName}
                 StackName: !Sub "${RepoName}-lari-deployment"
-                TemplateConfiguration: app_source::template-configuration.json
+                TemplateConfiguration: cfn_source::template-configuration.json
                 TemplatePath: cfn_source::lambda-deployment.yml
                 ParameterOverrides: !Sub |
                   {
