@@ -118,7 +118,7 @@ Resources:
               OutputArtifacts:
                 - Name: lari_source
               Configuration:
-                Owner: lari
+                Owner: mo-rjr
                 Repo: playwright-aws-lambda-example
                 PollForSourceChanges: false
                 Branch: main
