@@ -101,7 +101,7 @@ Resources:
                 Provider: GitHub
                 Version: 1
               OutputArtifacts:
-                - Name: cfn-source
+                - Name: cfn_source
               Configuration:
                 Owner: mo-rjr
                 Repo: ecr-attempt
@@ -116,7 +116,7 @@ Resources:
                 Provider: GitHub
                 Version: 1
               OutputArtifacts:
-                - Name: lari-source
+                - Name: lari_source
               Configuration:
                 Owner: lari
                 Repo: playwright-aws-lambda-example
@@ -134,10 +134,10 @@ Resources:
                 Version: '1'
               Configuration:
                 ProjectName: !Ref CodeBuildProject
-                PrimarySource: cfn-source
+                PrimarySource: cfn_source
               InputArtifacts:
-                - Name: cfn-source
-                - Name: lari-source
+                - Name: cfn_source
+                - Name: lari_source
         - Name: Deploy
           Actions:
             - Name: Deploy
@@ -148,14 +148,14 @@ Resources:
                 Provider: CloudFormation
                 Version: '1'
               InputArtifacts:
-                - Name: cfn-source
+                - Name: cfn_source
               Configuration:
                 ActionMode: CREATE_UPDATE
                 Capabilities: CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND
                 RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${RoleName}
                 StackName: !Sub "${RepoName}-lari-deployment"
-                TemplateConfiguration: app-source::template-configuration.json
-                TemplatePath: cfn-source::lambda-deployment.yml
+                TemplateConfiguration: app_source::template-configuration.json
+                TemplatePath: cfn_source::lambda-deployment.yml
                 ParameterOverrides: !Sub |
                   {
                     "Tier": "${Tier}",
