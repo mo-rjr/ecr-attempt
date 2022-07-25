@@ -47,7 +47,7 @@ Resources:
         Type: LINUX_CONTAINER
       ServiceRole: !Sub arn:aws:iam::${AWS::AccountId}:role/${RoleName}
       Source:
-        BuildSpec: lari/buildspec.yml
+        BuildSpec: lari/lari-buildspec.yml
         Type: CODEPIPELINE
       TimeoutInMinutes: 5
 
