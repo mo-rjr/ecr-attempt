@@ -3,6 +3,13 @@
 ## pipeline.yml
 deploy pipeline.yml to build a little docker container, put it into ECR, and then deploy it as a lambda from ECR
 
+* v1 was basic
+
+* v2 adds playwright, copied from [https://github.com/lari/playwright-aws-lambda-example](https://github.com/lari/playwright-aws-lambda-example)
+
+
+
+
 for proper use, would need:
 * pipeline's kms key to encrypt on build bucket and in ECR
 * permissions so ECR can be used by non-management account

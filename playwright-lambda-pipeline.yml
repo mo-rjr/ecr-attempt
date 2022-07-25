@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: A code pipeline that uses Docker and ECR to deploy a lambda
+
+Parameters:
+  Tier:
+    Description: Unique ID for the pipeline and resources, e.g. a developer's initials on the dev account
+    Type: String
+  RepoName:
+    Description: repo name, like rjr-playwright-app
+    Type: String
+  BucketName:
+    Description: this pipeline is for experimenting, so put the source on a bucket and use the bucket for building
+    Type: String
+  RoleName:
+    Description: name of the role to use
+    Type: String
+  GithubOAuthToken:
+    Type: String
+
+
+    # can put encryption configuration on the ecr repository
+Resources:
+
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: S3_BUCKET
+            Value: !Ref BucketName
+          - Name: AWS_REGION_TO_USE
+            Value: !Ref AWS::Region
+          - Name: AWS_ACCOUNT_ID
+            Value: !Ref AWS::AccountId
+          - Name: IMAGE_REPO_NAME
+            Value: !Ref RepoName
+          - Name: IMAGE_TAG
+            Value: "latest"
+        PrivilegedMode: true
+        Image: 'aws/codebuild/amazonlinux2-x86_64-standard:3.0'
+        Type: LINUX_CONTAINER
+      ServiceRole: !Sub arn:aws:iam::${AWS::AccountId}:role/${RoleName}
+      Source:
+        BuildSpec: buildspec.yml
+        Type: CODEPIPELINE
+      TimeoutInMinutes: 5
+
+  CodeBuildProjectLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/codebuild/${CodeBuildProject}
+      RetentionInDays: 14
+
+  PipelineContainerRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Ref RepoName
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keep the last 10 images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 10
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+      ImageScanningConfiguration:
+        ScanOnPush: true
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RestartExecutionOnUpdate: true
+      RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${RoleName}
+      ArtifactStore:
+        Type: S3
+        Location: !Ref BucketName
+        # no encryption for experiment
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              OutputArtifacts:
+                - Name: app-source
+              Configuration:
+                Owner: mo-rjr
+                Repo: ecr-attempt
+                PollForSourceChanges: false
+                Branch: main
+                OAuthToken: !Ref GithubOAuthToken
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              InputArtifacts:
+                - Name: app-source
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${RoleName}
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: '1'
+              InputArtifacts:
+                - Name: app-source
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND
+                RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${RoleName}
+                StackName: "rjr-trying-ecr-deployment"
+                TemplateConfiguration: app-source::template-configuration.json
+                TemplatePath: app-source::lambda-deployment.yml
+                ParameterOverrides: !Sub |
+                  {
+                    "Tier": "${Tier}",
+                    "RepoName": "${RepoName}",
+                  }

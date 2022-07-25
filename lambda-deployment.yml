@@ -5,6 +5,8 @@ Parameters:
   Tier:
     Description: Unique ID for the pipeline and resources, e.g. a developer's initials on the dev account
     Type: String
+  RepoName:
+    Type: String
 
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build.html
 
@@ -12,9 +14,9 @@ Resources:
   ContainerAppLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Description: AppInAContainer
+      Description: PlaywrightLambdaInAContainer
       PackageType: Image
-      ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/rjr-app:latest"
+      ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepoName}:latest"
       MemorySize: 4096
       Timeout: 300
       Tracing: Active
