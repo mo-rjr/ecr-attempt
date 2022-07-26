@@ -49,7 +49,7 @@ Resources:
       Source:
         BuildSpec: kis/kis-buildspec.yml
         Type: CODEPIPELINE
-      TimeoutInMinutes: 5
+      TimeoutInMinutes: 15
 
   CodeBuildProjectLogGroup:
     Type: AWS::Logs::LogGroup
