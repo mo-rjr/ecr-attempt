@@ -1,9 +1,11 @@
 AWSTemplateFormatVersion: 2010-09-09
-Transform: AWS::Serverless-2016-10-31
+Transform: 'AWS::Serverless-2016-10-31'
 Description: Creates resources required by the pdf-rendered lambda
 Parameters:
   Tier:
     Description: Unique ID for the pipeline and resources, e.g. a developer's initials on the dev account
+    Type: String
+  RepoName:
     Type: String
 
 # https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-build.html
@@ -12,19 +14,15 @@ Resources:
   ContainerAppLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Description: AppInAContainerNoEcr
+      Description: KeepItSimple
       PackageType: Image
+      ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepoName}:latest"
       MemorySize: 4096
       Timeout: 300
       Tracing: Active
       Environment:
         Variables:
           TIER: !Ref Tier
-    Metadata:
-      Dockerfile: Dockerfile.kis
-      DockerContext: ./ecr-attempt
-      DockerTag: latest
-
 
   ContainerAppLambdaLogGroup:
     Type: AWS::Logs::LogGroup
