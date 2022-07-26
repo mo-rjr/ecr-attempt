@@ -1,3 +1,6 @@
 FROM public.ecr.aws/lambda/nodejs:14.2022.07.19.13
+
+RUN npx playwright install --with-deps chromium
+
 COPY kis/kis-app.js ${LAMBDA_TASK_ROOT}
 CMD [ "kis-app.handler" ]
